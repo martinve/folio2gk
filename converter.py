@@ -114,6 +114,14 @@ def flatten_and_unique(nested_list):
     flattened = [item for sublist in nested_list for item in sublist]
     # Return unique values as a sorted list
     return sorted(set(flattened))
+! [X] : ((Devices(X) & BelongTo(X, company)) => ConnectTo(X, googleHome)).
+! [X] : ((Devices(X) & With(X, companyLogo)) => BelongTo(X, company)).
+! [X] : ((Devices(X) => (With(X, companyLogo) <~> BelongTo(X, employee))).
+! [X] : ((Devices(X) & BelongTo(X, employee)) => CanBeConnectedTo(X, wifi)).
+! [X] : ((Devices(X) & ConnectTo(X, googleHome)) => ControlledBy(X, manager)).
+! [X] : ((Devices(X) & CanBeConnectedTo(X, wifi)) => EasyToOperate(X)).
+! [X] : ((Devices(X) & EasyToOperate(X)) => ProducedAfterNewCTOAppointed(X, company)).
+Devices(modelXX) & (-ProducedAfterNewCTOAppointed(modelXX, company)).
 
 def fol_to_simple_logic(clauses_str, upper_vars=[]):
     """
@@ -146,21 +154,19 @@ def fol_to_simple_logic(clauses_str, upper_vars=[]):
 
 
 def logic_to_json(logic):
-    print("Logic", logic)
     
     with open("tmpfile.txt", "w") as f:
         f.write(logic)
 
     result = subprocess.run([GKC_CMD, "-convert", "-json", TEMP_FILE_NAME], capture_output=True, text=True)
-    logic = result.stdout
+    json_logic = result.stdout
 
-    print("Logic", logic)
+    json_logic = eval(json_logic)
+    json_logic = str(json_logic)
+    json_logic = json_logic.replace("'", "\"")
 
-    logic = "\n".join(logic)
-    logic = json.loads(logic)
-    print(logic)
+    return json_logic
 
-    return logic
 
 def extract_data(dataset, maxnum, parse_json=False):
     print("Train:", len(ds_train))
@@ -178,7 +184,8 @@ def extract_data(dataset, maxnum, parse_json=False):
         premises_json = None
         if parse_json:
             try:
-                premises_json = logic_to_json(premises_logic)
+                premises_json_str = logic_to_json(premises_logic)
+                premises_json = json.loads(premises_json_str)
             except Exception as e:
                 premises_json = "Error"
 
@@ -187,14 +194,15 @@ def extract_data(dataset, maxnum, parse_json=False):
         print(f"[PREMISE (GK)]:\n{premises_logic}\n")
         if premises_json:
             print("[PREMISE (JSON-LD-LOGIC)]:")
-            pprint.pprint(premises_json, indent=2)
+            pprint.pprint(premises_json, compact=True)
             print()
         print(f"[CONCLUSION]:\n{''.join(it['conclusion'])}\n")  
         print(f"[CONCLUSION (FOL)]:\n{it['conclusion-FOL']}\n")
         print(f"[CONCLUSION (GK)]:\n{conclusion_logic}\n")
         print("\n===\n")
         
-        if maxnum > 1 and idx >= maxnum - 1:
+
+        if maxnum > 0 and idx >= maxnum - 1:
             break
 
 
