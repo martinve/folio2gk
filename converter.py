@@ -136,7 +136,6 @@ def fol_to_simple_logic(clauses_str, upper_vars=[]):
         new_clauses.append(cl_new)
 
     varlist = flatten_and_unique(varlist)
-    print(varlist)
 
     ret = "\n".join(new_clauses)
     return varlist, ret
