@@ -2,10 +2,14 @@
 
 import sys
 import re
-import pprint
 import argparse
+import pprint
+import subprocess
+import json
 from datasets import load_dataset
 
+GKC_CMD = "gkc"
+TEMP_FILE_NAME = "tmpfile.txt"
 
 def extract_quantified_variables(logical_expression):
     """
@@ -140,7 +144,25 @@ def fol_to_simple_logic(clauses_str, upper_vars=[]):
     ret = "\n".join(new_clauses)
     return varlist, ret
 
-def extract_data(dataset, maxnum):
+
+def logic_to_json(logic):
+    print("Logic", logic)
+    
+    with open("tmpfile.txt", "w") as f:
+        f.write(logic)
+
+    result = subprocess.run([GKC_CMD, "-convert", "-json", TEMP_FILE_NAME], capture_output=True, text=True)
+    logic = result.stdout
+
+    print("Logic", logic)
+
+    logic = "\n".join(logic)
+    logic = json.loads(logic)
+    print(logic)
+
+    return logic
+
+def extract_data(dataset, maxnum, parse_json=False):
     print("Train:", len(ds_train))
     print("Validation:", len(ds_valiation))
     print("---")
@@ -152,26 +174,42 @@ def extract_data(dataset, maxnum):
         conclusion_fol = it["conclusion-FOL"]
         _, conclusion_logic = fol_to_simple_logic(conclusion_fol, varlist)
 
+        
+        premises_json = None
+        if parse_json:
+            try:
+                premises_json = logic_to_json(premises_logic)
+            except Exception as e:
+                premises_json = "Error"
+
         print(f"[PREMISE]:\n{''.join(it['premises'])}\n")
         print(f"[PREMISE (FOL)]:\n{premises_fol}\n")
         print(f"[PREMISE (GK)]:\n{premises_logic}\n")
+        if premises_json:
+            print("[PREMISE (JSON-LD-LOGIC)]:")
+            pprint.pprint(premises_json, indent=2)
+            print()
         print(f"[CONCLUSION]:\n{''.join(it['conclusion'])}\n")  
         print(f"[CONCLUSION (FOL)]:\n{it['conclusion-FOL']}\n")
         print(f"[CONCLUSION (GK)]:\n{conclusion_logic}\n")
         print("\n===\n")
         
+        if maxnum > 1 and idx >= maxnum - 1:
+            break
 
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Prepare FOLIO tests')
     parser.add_argument("--max", type=int, default=-1, help="Max number of tests to run")
+    parser.add_argument("--json", action="store_true", help="Parse simplified logic to JSON-LD-Logic")
 
     args = parser.parse_args()
     maxnum = args.max
+    parse_json = args.json
 
     ds = load_dataset("tasksource/folio")
     ds_train = ds["train"]
     ds_valiation = ds["validation"]
 
-    extract_data(ds_train, maxnum)
+    extract_data(ds_train, maxnum, parse_json)
