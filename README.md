@@ -9,3 +9,7 @@ Install the requirements by running `pip install -r requirements txt`
 ### Running the Software
 
 Run the software: `./converter.py > clauses.txt`
+
+### Converted clauses
+
+Converted clauses are found in `clauses.txt`
