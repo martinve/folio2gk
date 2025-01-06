@@ -8,7 +8,8 @@ Install the requirements by running `pip install -r requirements txt`
 
 ### Running the Software
 
-Run the software: `./converter.py > clauses.txt`
+Convering clauses to simplified format: `./converter.py > clauses.txt`
+Converting simplified format to JSON-LD-LOGIC: TBC
 
 ### Converted clauses
 
