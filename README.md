@@ -19,4 +19,13 @@ Additionally it is possilbe to limit the number of tests to be processed by `--m
 
 ### Converted clauses
 
-Converted clauses are found in `clauses.txt`
+Already converted clauses can be found in `clauses.txt`
+
+### Files
+
+* `ttfilter.py` 
+
+
+# FIX Patterns
+
+t2-49: conclusion-FOL needs extra ( at POS2

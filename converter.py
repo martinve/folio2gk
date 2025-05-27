@@ -114,14 +114,7 @@ def flatten_and_unique(nested_list):
     flattened = [item for sublist in nested_list for item in sublist]
     # Return unique values as a sorted list
     return sorted(set(flattened))
-! [X] : ((Devices(X) & BelongTo(X, company)) => ConnectTo(X, googleHome)).
-! [X] : ((Devices(X) & With(X, companyLogo)) => BelongTo(X, company)).
-! [X] : ((Devices(X) => (With(X, companyLogo) <~> BelongTo(X, employee))).
-! [X] : ((Devices(X) & BelongTo(X, employee)) => CanBeConnectedTo(X, wifi)).
-! [X] : ((Devices(X) & ConnectTo(X, googleHome)) => ControlledBy(X, manager)).
-! [X] : ((Devices(X) & CanBeConnectedTo(X, wifi)) => EasyToOperate(X)).
-! [X] : ((Devices(X) & EasyToOperate(X)) => ProducedAfterNewCTOAppointed(X, company)).
-Devices(modelXX) & (-ProducedAfterNewCTOAppointed(modelXX, company)).
+
 
 def fol_to_simple_logic(clauses_str, upper_vars=[]):
     """
